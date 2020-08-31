@@ -1,13 +1,13 @@
 {
-    "name": "alymosul/exponent-server-sdk-php",
+    "name": "theUNnicked/exponent-server-sdk-php",
     "description": "Server-side library for working with Expo push notifications using PHP",
     "keywords": ["expo", "exponent", "push", "notifications"],
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Aly Suleiman",
-            "email": "alymosul@gmail.com"
+            "name": "Krzysztof Świeczkowski",
+            "email": "k.swieczkowski@commonwombat.pl"
         }
     ],
     "require": {
