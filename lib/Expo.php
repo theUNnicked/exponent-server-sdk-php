@@ -108,18 +108,22 @@ class Expo
         $dataBatches[] = $postData;
 
         $responses = [];
-        foreach($dataBatches as &$dataBatch){
+        foreach($dataBatches as &$dataBatch) {
             $ch = $this->prepareCurl();
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dataBatch));
             $response = $this->executeCurl($ch);
 
-            // If the notification failed completely, throw an exception with the details
-            if (!$debug && $this->failedCompletely($response, $interests)) {
-                throw ExpoException::failedCompletelyException($response);
-            }
-
-            $responses[] = $response;
+            //merge all responses arrays into one array
+            $responses = array_merge($responses, $response);
         }
+
+        // If the notification failed completely, throw an exception with the details
+        if (!$debug && $this->failedCompletely($responses, $recipients)) {
+            throw ExpoException::failedCompletelyException($responses);
+        }
+
+        // Remove tokens returning DeviceNotRegistered error
+        $this->removeNotRegisteredTokens($responses, $recipients);
 
         return $responses;
     }
@@ -144,6 +148,25 @@ class Expo
         }
 
         return $numberOfFailures === $numberOfRecipients;
+    }
+
+    /**
+     * Forget tokens returning DeviceNotRegistered errors
+     *
+     * @param array $response
+     * @param array $recipients
+     *
+     * @throws Exceptions\ExpoRegistrarException
+     */
+    private function removeNotRegisteredTokens(array $response, array $recipients)
+    {
+        foreach ($response as $key => $item) {
+            if ($item['status'] === 'error') {
+                if ($item['details']['error'] === "DeviceNotRegistered") {
+                    $this->registrar->removeInterest($recipients[$key]);
+                }
+            }
+        }
     }
 
     /**
